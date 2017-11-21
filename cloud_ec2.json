@@ -1,132 +1,99 @@
-{
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Template to launch an Amazon Linux instance.",
-  "Parameters": {
-    "InstanceType": {
-      "Type": "String",
-      "Default": "t2.micro",
-      "AllowedValues": [
-        "m1.small",
-        "m1.large",
-        "t2.micro"
-      ],
-      "Description": "Enter m1.small, m1.large, or m1.xlarge. Default is m1.small."
-    },
-    "KeyName": {
-      "Type": "String",
-      "Description": "Enter the key pair name that you want associated with this instance. Note: Name is required"
-    }
-  },
-  "Mappings": {
-      "RegionMap" : {
-          "us-east-1"      : { "AMI" : "ami-05355a6c" },
-          "us-west-1"      : { "AMI" : "ami-3ffed17a" },
-          "us-west-2"      : { "AMI" : "ami-0358ce33" },
-          "eu-west-1"      : { "AMI" : "ami-c7c0d6b3" },
-          "sa-east-1"      : { "AMI" : "ami-5253894f" },
-          "ap-southeast-1" : { "AMI" : "ami-fade91a8" },
-          "ap-southeast-2" : { "AMI" : "ami-d16bfbeb" },
-          "ap-northeast-1" : { "AMI" : "ami-39b23d38" }
-      }
-  },
-  "Resources": {
-    "Ec2Instance": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "ImageId":  {"Fn::FindInMap":["RegionMap", {"Ref" : "AWS::Region" }, "AMI" ]},
-        "InstanceType": { "Ref": "InstanceType" },
-        "KeyName": { "Ref": "aws" },
-        "SecurityGroups": [ { "Ref": "WebSecurityGroup" } ],
-        "UserData": {
-          "Fn::Base64": { "Fn::Join": [ "", [
-                "#!/bin/bash -v\n",
-                "# Make certain that cfn itself is up to date \n",
-                "yum update -y aws-cfn-bootstrap \n",
-
-                "# Helper function\n",
-                "function error_exit\n",
-                "{\n",
-                "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref": "WaitHandle" }, "'\n",
-                "  exit 1\n",
-                "}\n",
-
-                "# install and start httpd \n",
-                "yum install -y httpd || error_exit 'Failed to install Apache' \n",
-                "/sbin/service httpd start || error_exit 'Failed to start Apache' \n",
-
-                "# We got here without issues (except as signaled), so signal success\n",
-                "/opt/aws/bin/cfn-signal -e 0 -r \"User data script complete\" '", { "Ref": "WaitHandle" }, "'\n"
-              ]
-            ]
-          }
-        }
-      }
-    },
-    "WebSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Enable tcp access for Web and SSH traffic from outside",
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "80",
-            "ToPort": "80",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "22",
-            "ToPort": "22",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ]
-      }
-    },
-    "WaitHandle": {
-      "Type": "AWS::CloudFormation::WaitConditionHandle"
-    },
-    "WaitCondition": {
-      "Type": "AWS::CloudFormation::WaitCondition",
-      "DependsOn": "Ec2Instance",
-      "Properties": {
-        "Handle": { "Ref": "WaitHandle" },
-        "Timeout": "300"
-      }
-    }
-  },
-  "Outputs": {
-    "InstanceId": {
-      "Description": "Instance ID of the Web Server",
-      "Value": {
-        "Ref": "Ec2Instance"
-      }
-    },
-    "AZ": {
-      "Description": "Instances is running in Availability Zone ",
-      "Value": {
-        "Fn::GetAtt": [
-          "Ec2Instance",
-          "AvailabilityZone"
-        ]
-      }
-    },
-    "PublicIP": {
-      "Description": "Public IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Ec2Instance",
-          "PublicIp"
-        ]
-      }
-    },
-    "PublicDNS": {
-      "Description": "Instance Public DNS Name",
-      "Value": {
-        "Fn::GetAtt": [
-          "Ec2Instance",
-          "PublicDnsName"
-        ]
-      }
-    }
-  }
-}
+{ 
+   "AWSTemplateFormatVersion" : "2010-09-09", 
+   
+   "Description" : " Create an Amazon EC2 instance running the Windows AMI. ", 
+   "Parameters" : { 
+     "KeyName": { 
+       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance", 
+       "Type": "AWS::EC2::KeyPair::KeyName", 
+       "Default": "stack2", 
+       "ConstraintDescription" : "must be the name of an existing EC2 KeyPair." 
+     }, 
+   
+     "InstanceType" : { 
+       "Description" : "WebServer EC2 instance type", 
+       "Type" : "String", 
+       "Default" : "t2.micro",       
+       "AllowedValues" : [ "t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"] 
+ , 
+       "ConstraintDescription" : "must be a valid EC2 instance type." 
+     }, 
+   
+     "SSHLocation" : { 
+       "Description" : "The IP address range that can be used to SSH to the EC2 instances", 
+       "Type": "String", 
+       "MinLength": "9", 
+       "MaxLength": "18", 
+       "Default": "0.0.0.0/0", 
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x." 
+    } 
+   }, 
+   
+   "Mappings" : { 
+     "AWSInstanceType2Arch" : { 
+       "t1.micro"    : { "Arch" : "PV64"   }, 
+       "t2.nano"     : { "Arch" : "HVM64"  }, 
+       "t2.micro"    : { "Arch" : "HVM64"  } 
+     }, 
+   
+     "AWSInstanceType2NATArch" : { 
+      "t1.micro"    : { "Arch" : "NATPV64"   }, 
+       "t2.nano"     : { "Arch" : "NATHVM64"  }, 
+       "t2.micro"    : { "Arch" : "NATHVM64"  } 
+     }, 
+     "AWSRegionArch2AMI" : { 
+       "us-west-2"        : {"HVM64" : "ami-47897a3f"} 
+     } 
+ }, 
+   
+  "Resources" : { 
+     "EC2Instance" : { 
+       "Type" : "AWS::EC2::Instance", 
+       "Properties" : { 
+         "InstanceType" : { "Ref" : "InstanceType" }, 
+         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ], 
+         "Tags" : [ 
+                     { 
+                        "Key" : "Name", 
+                        "Value" : "Stack1" 
+                    } 
+                   ], 
+          
+         "KeyName" : "stack2", 
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, 
+                           { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] } 
+       } 
+    }, 
+   
+     "InstanceSecurityGroup" : { 
+       "Type" : "AWS::EC2::SecurityGroup", 
+       "Properties" : { 
+         "GroupDescription" : "Enable SSH access via port 22", 
+        "SecurityGroupIngress" : [ { 
+           "IpProtocol" : "tcp", 
+          "FromPort" : "22", 
+           "ToPort" : "22", 
+           "CidrIp" : { "Ref" : "SSHLocation"} 
+         } ] 
+       } 
+     } 
+   },    
+   "Outputs" : { 
+     "InstanceId" : { 
+       "Description" : "InstanceId of the newly created EC2 instance", 
+       "Value" : { "Ref" : "EC2Instance" } 
+    }, 
+     "AZ" : { 
+       "Description" : "Availability Zone of the newly created EC2 instance", 
+       "Value" : { "Fn::GetAtt" : [ "EC2Instance", "AvailabilityZone" ] } 
+     }, 
+     "PublicDNS" : { 
+       "Description" : "Public DNSName of the newly created EC2 instance", 
+       "Value" : { "Fn::GetAtt" : [ "EC2Instance", "PublicDnsName" ] } 
+     }, 
+     "PublicIP" : { 
+       "Description" : "Public IP address of the newly created EC2 instance", 
+       "Value" : { "Fn::GetAtt" : [ "EC2Instance", "PublicIp" ] } 
+     } 
+  } 
+ } 
