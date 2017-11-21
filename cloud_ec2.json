@@ -54,7 +54,7 @@
          "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ], 
          "Tags" : [ 
                      { 
-                        "Key" : "Name", 
+                        "Key" : "aws", 
                         "Value" : "provision" 
                     } 
                    ], 
