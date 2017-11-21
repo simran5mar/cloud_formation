@@ -55,11 +55,11 @@
          "Tags" : [ 
                      { 
                         "Key" : "Name", 
-                        "Value" : "Stack1" 
+                        "Value" : "provision" 
                     } 
                    ], 
           
-         "KeyName" : "stack2", 
+         "KeyName" : "aws", 
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, 
                            { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] } 
        } 
