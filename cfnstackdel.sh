@@ -1,5 +1,5 @@
 #!/bin/bash
-hn=$2
+hn=$1
 
 aws cloudformation describe-stacks | grep StackName | awk -F":" '{print $2}' | tr -d '\"' | tr -d '\,' | grep "\b${hn}\b" >> /dev/null
 
