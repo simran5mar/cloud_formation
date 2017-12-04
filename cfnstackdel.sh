@@ -1,5 +1,5 @@
 #!/bin/bash
-hn=$2
+hn=$1
 
 aws cloudformation describe-stacks | grep StackName | awk -F":" '{print $2}' | tr -d '\"' | tr -d '\,' | grep "\b${hn}\b" >> /dev/null
 
@@ -10,12 +10,15 @@ then
         CfnStackRegion=us-west-2
         stackStatus="DELETE_IN_PROGRESS"
 
-        while [[ 2 ]]; do
+        while [[ 1 ]]; do
                 echo aws cloudformation describe-stacks --region "${CfnStackRegion}" --stack-name "${CfnStackName}"
                 response=$(aws cloudformation describe-stacks --region "${CfnStackRegion}" --stack-name "${CfnStackName}" 2>&1)
+                echo $response
                 responseOrig="$response"
+                echo $responseOrig
                 response=$(echo "$response" | tr '\n' ' ' | tr -s " " | sed -e 's/^ *//' -e 's/ *$//')
-
+                echo $stackStatus
+                echo $response
                 if [[ "$response" != *"StackStatus"* ]]
                 then
                         echo "Error occurred creating AWS CloudFormation stack. Error:"
