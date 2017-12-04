@@ -7,7 +7,7 @@ if [[ $? != "0" ]]
 then
         aws cloudformation delete-stack --stack-name ${hn}
         CfnStackName=${hn}
-        CfnStackRegion=ap-southeast-2
+        CfnStackRegion=us-west-2
         stackStatus="DELETE_IN_PROGRESS"
 
         while [[ 1 ]]; do
