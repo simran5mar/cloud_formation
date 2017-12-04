@@ -1,5 +1,5 @@
 #!/bin/bash
-hn=$1
+hn=$2
 
 aws cloudformation describe-stacks | grep StackName | awk -F":" '{print $2}' | tr -d '\"' | tr -d '\,' | grep "\b${hn}\b" >> /dev/null
 
@@ -10,7 +10,7 @@ then
         CfnStackRegion=us-west-2
         stackStatus="DELETE_IN_PROGRESS"
 
-        while [[ 1 ]]; do
+        while [[ 2 ]]; do
                 echo aws cloudformation describe-stacks --region "${CfnStackRegion}" --stack-name "${CfnStackName}"
                 response=$(aws cloudformation describe-stacks --region "${CfnStackRegion}" --stack-name "${CfnStackName}" 2>&1)
                 responseOrig="$response"
