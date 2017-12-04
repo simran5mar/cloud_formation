@@ -1,9 +1,9 @@
 #!/bin/bash
 hn=$1
 
-aws cloudformation describe-stacks | grep StackName | awk -F":" '{print $2}' | tr -d '\"' | tr -d '\,' | grep "\b${hn}\b" >> /dev/null
+aws cloudformation describe-stacks | grep StackName | awk -F":" '{print $2}' | tr -d '\"' | tr -d '\,' | grep "\b${hn}\b"
 
-if [[ $? != "0" ]]
+if [[ $? != 0 ]]
 then
         aws cloudformation delete-stack --stack-name ${hn}
         CfnStackName=${hn}
